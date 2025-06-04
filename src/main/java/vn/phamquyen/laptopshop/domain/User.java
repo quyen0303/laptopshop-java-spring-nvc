@@ -1,4 +1,4 @@
-package vn.hoidanit.laptopshop.domain;
+package vn.phamquyen.laptopshop.domain;
 
 public class User {
     private long id;

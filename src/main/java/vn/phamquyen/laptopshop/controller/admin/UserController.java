@@ -1,31 +1,43 @@
-package vn.phamquyen.laptopshop.controller;
+package vn.phamquyen.laptopshop.controller.admin;
 
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.validation.Valid;
 import vn.phamquyen.laptopshop.domain.User;
+import vn.phamquyen.laptopshop.service.UploadService;
 import vn.phamquyen.laptopshop.service.UserService;
 
 @Controller
 public class UserController {
 
+    private final UploadService uploadService;
+
     private final UserService userService;
 
-    public UserController(UserService userService) {
+    private final PasswordEncoder passwordEncoder;
+
+    public UserController(UserService userService, UploadService uploadService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.uploadService = uploadService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @RequestMapping("/")
     public String getHomePage(Model model) {
-        List<User> arrUser = this.userService.getAllUserByEmail("paqvippro@gmail.com");
+        List<User> arrUser = this.userService.getAllUsersByEmail("paqvippro@gmail.com");
         System.out.println(arrUser);
 
         model.addAttribute("hoidanit", "from controller with model");
@@ -38,12 +50,40 @@ public class UserController {
         return "admin/user/create";
     }
 
+    @PostMapping(value = "/admin/user/create")
+    public String createUserPage(Model model,
+            @ModelAttribute("newUser") @Valid User hoidanit,
+            BindingResult newUserBindingResult,
+            @RequestParam("quyendzFile") MultipartFile file) {
+        // System.out.println(" run here " + hoidanit);
+
+        List<FieldError> errors = newUserBindingResult.getFieldErrors();
+        for (FieldError error : errors) {
+            System.out.println(error.getField() + " - " + error.getDefaultMessage());
+        }
+        // validate
+        if (newUserBindingResult.hasErrors()) {
+            return "/admin/user/create";
+        }
+
+        String hasPassword = this.passwordEncoder.encode(hoidanit.getPassword());
+        String avatar = this.uploadService.handleSaveUploadFile(file, "avatar");
+
+        hoidanit.setAvatar(avatar);
+        hoidanit.setPassword(hasPassword);
+
+        hoidanit.setRole(this.userService.getRoleByName(hoidanit.getRole().getName()));
+        //save
+        this.userService.handleSaveUser(hoidanit);
+        return "redirect:/admin/user";//chuyen huong trang
+    }
+
     @RequestMapping("/admin/user")
     public String getListUserPage(Model model) {
-        List<User> users = this.userService.getAllUser();
+        List<User> users = this.userService.getAllUsers();
         model.addAttribute("users", users);
         System.out.println(">>> Check users: " + users);
-        return "admin/user/list-user";
+        return "admin/user/show";
     }
 
     @RequestMapping("/admin/user/{id}")
@@ -52,7 +92,7 @@ public class UserController {
         User user = this.userService.getUserById(id);
         System.out.println("User: " + user);
         model.addAttribute("user", user);
-        return "admin/user/show";
+        return "admin/user/detail";
     }
 
     @RequestMapping("/admin/user/update/{id}")
@@ -62,13 +102,6 @@ public class UserController {
         return "admin/user/update";
     }
 
-    @RequestMapping(value = "/admin/user/create", method = RequestMethod.POST)
-    public String createUserPage(Model model, @ModelAttribute("newUser") User hoidanit) {
-        System.out.println(" run here " + hoidanit);
-        this.userService.handleSaveUser(hoidanit);
-        return "redirect:/admin/user";//chuyen huong trang
-    }
-
     @PostMapping("/admin/user/update")
     public String postUpdateUserPage(Model model, @ModelAttribute("newUser") User hoidanit) {
         User currentUser = this.userService.getUserById(hoidanit.getId());
@@ -76,7 +109,7 @@ public class UserController {
             currentUser.setFullName(hoidanit.getFullName());
             currentUser.setAddress(hoidanit.getAddress());
             currentUser.setPhone(hoidanit.getPhone());
-
+            currentUser.getRole().setName(hoidanit.getRole().getName());
             this.userService.handleSaveUser(currentUser);
         }
         return "redirect:/admin/user";
@@ -95,4 +128,5 @@ public class UserController {
         this.userService.deleteAUser(hoidanit.getId());
         return "redirect:/admin/user";
     }
+
 }

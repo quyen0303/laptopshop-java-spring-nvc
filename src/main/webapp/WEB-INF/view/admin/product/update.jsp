@@ -13,7 +13,7 @@
                 <title>Dashboard - Admin</title>
                 <link href="/css/styles.css" rel="stylesheet" />
                 <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-
+                <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
                 <script>
                     $(document).ready(() => {
                         const avatarFile = $("#avatarFile");
@@ -49,10 +49,10 @@
                                 <div class="container mt-5">
                                     <div class="row">
                                         <div class="col-md-6 col-12 mx-auto">
-                                            <h3>Update a user</h3>
+                                            <h3>Update a product</h3>
                                             <hr />
                                             <form:form method="post" action="/admin/product/update"
-                                                modelAttribute="newProduct" class="row">
+                                                modelAttribute="newProduct" enctype="multipart/form-data" class="row">
                                                 <c:set var="errorName">
                                                     <form:errors path="name" cssClass="invalid-feedback" />
                                                 </c:set>
@@ -136,7 +136,7 @@
                                                         id="avatarPreview" />
                                                 </div>
                                                 <div class="col-12 mb-5">
-                                                    <button type="submit" class="btn btn-primary">Create</button>
+                                                    <button type="submit" class="btn btn-primary">Update</button>
                                                 </div>
                                             </form:form>
                                         </div>

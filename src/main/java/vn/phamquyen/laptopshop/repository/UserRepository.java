@@ -10,6 +10,7 @@ import vn.phamquyen.laptopshop.domain.User;
 //crud: create, read, update, delete
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+
     User save(User eric);
 
     void deleteById(long id);
@@ -19,4 +20,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findAll();
 
     User findById(long id); // null
+
+    boolean existsByEmail(String email);
+
+    User findByEmail(String email);
 }

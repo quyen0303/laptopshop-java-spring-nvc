@@ -24,6 +24,7 @@ public class ProductController {
 
     private final ProductService productService;
     private final UploadService uploadService;
+    
 
     public ProductController(ProductService productService, UploadService uploadService) {
         this.productService = productService;
@@ -32,7 +33,7 @@ public class ProductController {
 
     @GetMapping("/admin/product")
     public String getProduct(Model model) {
-        List<Product> products = this.productService.getAllProduct();
+        List<Product> products = this.productService.fetchProducts();
         model.addAttribute("products", products);
         return "admin/product/show";
     }
@@ -40,7 +41,7 @@ public class ProductController {
     @RequestMapping("/admin/product/{id}")
     public String getProductDetailPage(Model model, @PathVariable long id) {
         System.out.println("Check path id = " + id);
-        Product product = this.productService.getProductById(id);
+        Product product = this.productService.fetchProductById(id).get();
         System.out.println("Product: " + product);
         model.addAttribute("product", product);
         return "admin/product/detail";
@@ -72,21 +73,31 @@ public class ProductController {
         hoidanit.setImage(image);
         // hoidanit.setRole(this.userService.getRoleByName(hoidanit.getRole().getName()));
         //save
-        this.productService.handleSaveProduct(hoidanit);
+        this.productService.createProduct(hoidanit);
         return "redirect:/admin/product";//chuyen huong trang
     }
 
     @RequestMapping("/admin/product/update/{id}")
     public String getUpdateProductPage(Model model, @PathVariable long id) {
-        Product currentProduct = this.productService.getProductById(id);
+        Product currentProduct = this.productService.fetchProductById(id).get();
         model.addAttribute("newProduct", currentProduct);
         return "admin/product/update";
     }
 
     @PostMapping("/admin/product/update")
-    public String postUpdateProductPage(Model model, @ModelAttribute("newProduct") Product updatedProduct) {
-        Product currentProduct = this.productService.getProductById(updatedProduct.getId());
+    public String postUpdateProductPage(Model model, @ModelAttribute("newProduct") @Valid Product updatedProduct,
+            BindingResult newProductBindingResult,
+            @RequestParam("quyendzFile") MultipartFile file) {
+
+        if (newProductBindingResult.hasErrors()) {
+            return "admin/product/update";
+        }
+        Product currentProduct = this.productService.fetchProductById(updatedProduct.getId()).get();
         if (currentProduct != null) {
+            if (!file.isEmpty()) {
+                String img = this.uploadService.handleSaveUploadFile(file, "product");
+                currentProduct.setImage(img);
+            }
             currentProduct.setName(updatedProduct.getName());
             currentProduct.setDetailDesc(updatedProduct.getDetailDesc());
             currentProduct.setShortDesc(updatedProduct.getShortDesc());
@@ -94,7 +105,8 @@ public class ProductController {
             currentProduct.setSold(updatedProduct.getSold());
             currentProduct.setFactory(updatedProduct.getFactory());
             currentProduct.setTarget(updatedProduct.getTarget());
-            this.productService.handleSaveProduct(currentProduct);
+
+            this.productService.createProduct(currentProduct);
         }
         return "redirect:/admin/product";
     }
@@ -107,8 +119,8 @@ public class ProductController {
 
     @PostMapping("/admin/product/delete")
     public String postDeleteProductPage(Model model, @ModelAttribute("newProduct") Product deleleProduct) {
-        this.productService.deleteProductById(deleleProduct.getId());
+        this.productService.deleteProduct(deleleProduct.getId());
         return "redirect:/admin/product";
-    }
+    }  
 
 }

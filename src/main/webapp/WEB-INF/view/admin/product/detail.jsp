@@ -15,12 +15,12 @@
                 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
                 <script>
                     $(document).ready(() => {
-                        const avatarFile = $("#avatarFile");
-                        avatarFile.change(function (e) {
-                            const imgURL = URL.createObjectURL(e.target.files[0]);
-                            $("#avatarPreview").attr("src", imgURL);
+                        const orgImage = "${product.image}";
+                        if (orgImage) {
+                            const urlImage = "/images/product/" + orgImage;
+                            $("#avatarPreview").attr("src", urlImage);
                             $("#avatarPreview").css({ "display": "block" });
-                        });
+                        }
                     });
                 </script>
                 <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
@@ -48,7 +48,9 @@
 
                                             <hr />
 
-                                            <div class="card" style="width: 60%">
+                                            <div class="card" style="width: 80%">
+                                                <img class="card-img-top" src="/images/product/${product.image}"
+                                                    alt="Card image cap">
                                                 <div class="card-header">
                                                     Product information
                                                 </div>

@@ -54,9 +54,8 @@ public class UserController {
     public String createUserPage(Model model,
             @ModelAttribute("newUser") @Valid User hoidanit,
             BindingResult newUserBindingResult,
-            @RequestParam("quyendzFile") MultipartFile file) {
+            @RequestParam(value = "quyendzFile", required = false) MultipartFile file) {
         // System.out.println(" run here " + hoidanit);
-
         List<FieldError> errors = newUserBindingResult.getFieldErrors();
         for (FieldError error : errors) {
             System.out.println(error.getField() + " - " + error.getDefaultMessage());
@@ -65,9 +64,11 @@ public class UserController {
         if (newUserBindingResult.hasErrors()) {
             return "/admin/user/create";
         }
-
+        String avatar = null;
+        if (file != null && !file.isEmpty()) {
+            avatar = this.uploadService.handleSaveUploadFile(file, "avatar");
+        }
         String hasPassword = this.passwordEncoder.encode(hoidanit.getPassword());
-        String avatar = this.uploadService.handleSaveUploadFile(file, "avatar");
 
         hoidanit.setAvatar(avatar);
         hoidanit.setPassword(hasPassword);

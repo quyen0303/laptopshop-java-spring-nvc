@@ -14,6 +14,8 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>laptopshop</name>
 	<description>Demo project for Spring Boot</description>
+	<!-- jar không hỗ trợ jsp :v -->
+	<packaging>war</packaging>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
@@ -82,6 +84,11 @@
 		<dependency>
 			<groupId>org.springframework.session</groupId>
 			<artifactId>spring-session-jdbc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
+			<version>4.0.4</version>
 		</dependency>
 
 	</dependencies>
